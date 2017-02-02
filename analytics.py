@@ -149,6 +149,7 @@ def update_sheet(sheets_service, spreadsheet_id, sheet_name, data):
 
   return result
 
+## ******************** Begin Script ******************** ##
 
 def main():
 

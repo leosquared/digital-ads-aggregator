@@ -41,6 +41,7 @@ def update_sheet(sheets_service, spreadsheet_id, sheet_name, data):
 
 def get_sheet_data(sheets_service, spreadsheet_id, arg_name, sheet_name_dict, data_dict):
   """ retrieves data from a tab in a google spreadsheet """
+  
   sheet_name = sheet_name_dict['sheet_name']
   range_name = f'\'{sheet_name}\'!A:Z'
   data = sheets_service.spreadsheets().values().get(
@@ -64,6 +65,21 @@ def output_translator(json_path, data):
 
   return f'{json_path} generated'
 
+def output_report_sheets(sheets_service, spreadsheet_id, sheet_name, json_path):
+  """ get data from the sheet with report sheet IDs, then generate into json output """
+
+  range_name = f'\'{sheet_name}\'!A:Z'
+  data = sheets_service.spreadsheets().values().get(
+    spreadsheetId=spreadsheet_id, range=range_name).execute().get('values')
+
+  output = {}
+  for row in data[1:]:
+    output[row[2]] = {'sheet_id': row[1], 'report_name': row[0]}
+  with open(json_path, 'w') as outfile:
+    outfile.write(json.dumps(output))
+
+  return f'{json_path} generated'
+
 ## Begin Script
 service = initialize_sheets()
 data_dict = {}
@@ -77,4 +93,5 @@ for arg_name in SHEET_NAMES:
     )
 
 print(output_translator(TRANSLATOR_FILE, data_dict))
+print(output_report_sheets(service, SHEET_ID, REPORT_SHEET_NAME, SHEETS_FILE))
 
