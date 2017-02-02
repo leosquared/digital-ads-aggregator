@@ -14,14 +14,9 @@ from CREDENTIALS.GA_CREDENTIALS import *
 from pprint import pprint
 from collections import OrderedDict, Iterable
 from csv import writer, reader
-import re
+import re, json
 
 ## ******************** Google Analytics & Adwords Report Output ******************** ##
-
-def clean_name(unit_name):
-  """ clean up names of web properties in google analytics that have irregular characters """
-
-  return re.sub('[^A-Za-z0-9]+', ' ', unit_name)
 
 def initialize_management():
   """ get a management API object for a list of accounts, etc """
@@ -36,6 +31,11 @@ def initialize_management():
 
 def get_views(management_service):
   """ get a list of views, using the view IDs to get reports """
+
+  def clean_name(unit_name):
+    """ clean up names of web properties in google analytics that have irregular characters """
+
+    return re.sub('[^A-Za-z0-9]+', ' ', unit_name)
   
   ga_views = OrderedDict()
   accounts = management_service.management().accountSummaries().list().execute().get('items')
@@ -57,7 +57,7 @@ def initialize_analytics():
 
   return service
 
-def get_report(analytics_service, view_id, dimensions, metrics):
+def get_report_obj(analytics_service, view_id, dimensions, metrics):
   """ Use the Analytics Service Object to query the Analytics Reporting API V4. """
   
   dimensions_input = []
@@ -85,18 +85,41 @@ def get_report(analytics_service, view_id, dimensions, metrics):
 
   return report
 
+def translate_dimension(translator_json, dimension_name, dimension_value):
+  """ translates a raw dimension value into human readable ones """
+
+  dim_name = dimension_name.replace('ga:', 'utm_')
+
+  if not translator_json.get(dim_name):
+    return dimension_value
+  else:
+    try:
+      return translator_json[dim_name]['values'] \
+          .get(dimension_value.split('-')[translator_json[dim_name]['delim_position']]) or dimension_value
+    except:
+      return 'other'
+
 def output_report(report, ofile_name, account_name):
   """ takes a google analytics report object and loop through the json to get report into a spreadsheet format, reporting base file """
 
   report_data = report.get('data').get('rows')
   ofile = writer(open(ofile_name, 'a'))
   ga_metrics = [x.get('name') for x in report.get('columnHeader').get('metricHeader').get('metricHeaderEntries')]
+  ga_dimensions = report.get('columnHeader').get('dimensions')
+  with open(TRANSLATOR_FILE, 'r') as f:
+    translator_json = json.loads(f.read())
+
   if report_data:
     for row in report_data:
+
+      translated_dimensions = []
+      for i, dim in enumerate(row.get('dimensions')):
+        translated_dimensions.append(translate_dimension(translator_json, ga_dimensions[i], dim))
+
       for i, m in enumerate(ga_metrics):
         values = row.get('metrics')[0].get('values')
         if float(values[i])!=0:
-          ofile.writerow([account_name] + row.get('dimensions') + [m, values[i]])
+          ofile.writerow([account_name] + translated_dimensions + [m, values[i]])
 
   return None
 
@@ -137,14 +160,17 @@ def main():
   with open(OUTPUT_FILE_NAME, 'w') as f:
     writer(f).writerow(['account'] + DIMENSIONS + ['metric'] + ['metric_value'])
 
-  ## get report object
-  report = get_report(analytics, view_id=list(ga_views.keys())[0]
-          , metrics=METRICS, dimensions=DIMENSIONS)
+  # ## run one off report
+  # report = get_report_obj(analytics, view_id=list(ga_views.keys())[0]
+  #         , metrics=METRICS, dimensions=DIMENSIONS)
+  # output_report(report, 'test.csv', account_name='hello')
   
+  import get_translator
+
   ## Run report for each web property
   for view_id in ga_views:
     print('Running Report for {} ...'.format(ga_views[view_id]))
-    report = get_report(analytics, view_id=view_id
+    report = get_report_obj(analytics, view_id=view_id
             , metrics=METRICS, dimensions=DIMENSIONS)
     output_report(report, OUTPUT_FILE_NAME, account_name=ga_views[view_id])
     print('Report output generated!\n')
