@@ -3,6 +3,7 @@
 .DS_STORE
 __pycache__/*
 archive/*
-CREDENTIALS/*
+CREDENTIALS/*.csv
+CREDENTIALS/*.json
 outputs/*.csv
 outputs/*.json
