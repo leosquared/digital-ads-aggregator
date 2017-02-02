@@ -2,6 +2,7 @@
 
 .DS_STORE
 __pycache__/*
+*/__pycache__/*
 archive/*
 CREDENTIALS/*.csv
 CREDENTIALS/*.py

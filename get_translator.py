@@ -62,7 +62,7 @@ def output_translator(json_path, data):
   with open(json_path, 'w') as ofile:
     ofile.write(json.dumps(data))
 
-  return f'{OUTPUT_FILE_NAME} generated'
+  return f'{json_path} generated'
 
 ## Begin Script
 service = initialize_sheets()
@@ -76,5 +76,5 @@ for arg_name in SHEET_NAMES:
     , data_dict=data_dict
     )
 
-print(output_translator(OUTPUT_FILE_NAME, data_dict))
+print(output_translator(TRANSLATOR_FILE, data_dict))
 
