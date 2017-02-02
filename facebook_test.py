@@ -6,7 +6,7 @@ from facebookads.objects import (
     Campaign,
     AdAccount,
 )
-from FB_CREDENTIALS import *
+from CREDENTIALS.FB_CREDENTIALS import *
 
 # operations
 import json, os, pprint, time, dateutil.parser, dateutil.relativedelta
@@ -53,9 +53,10 @@ def campaign_stats(my_account):
 
     return report
 
+def output_stats(stats_output):
+    """ write stats output into a file """
 
-pp = pprint.PrettyPrinter(indent=4)
-
+    return None
 
 if __name__ == '__main__':
     

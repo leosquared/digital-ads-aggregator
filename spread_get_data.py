@@ -8,10 +8,11 @@ from oauth2client import file
 from oauth2client import tools
 
 ## must have CREDENTIALS.py in the same directory
-from GA_CREDENTIALS import *
+from CREDENTIALS.URLTOOL_ARGS import *
 
-## script
+## script operations
 from csv import writer, reader
+from pprint import pprint
 
 def initialize_sheets():
   """ creates a service object for uploading data to google sheets """
@@ -37,16 +38,37 @@ def update_sheet(sheets_service, spreadsheet_id, sheet_name, data):
 
   return result
 
+def get_sheet_data(sheets_service, spreadsheet_id, arg_name, sheet_name_dict, data_dict):
+  """ retrieves data from a tab in a google spreadsheet """
+  sheet_name = sheet_name_dict['sheet_name']
+  range_name = f'\'{sheet_name}\'!A:Z'
+  data = sheets_service.spreadsheets().values().get(
+    spreadsheetId=spreadsheet_id, range=range_name).execute().get('values')
+
+  data_dict[arg_name] = {}
+
+  for row in data[1:]:
+    try:
+      data_dict[arg_name][row[sheet_name_dict['col_num']]] = row[0]
+    except:
+      continue
+
+  return data_dict
+
 def main():
 
-  spreadsheet_id = '17Qf7D6pzR5mK90L2sjzo90JaRBY2OYhA28lOUDrn6rU'
-  range_name = 'test2!A1:Z3'
-  service = get_credentials()
-  
-  csvfile = reader(open('sample_report.csv', 'r'))
-  data = list(csvfile)
-  
-  print(update_sheet(service, spreadsheet_id, 'test2', data))
+  service = initialize_sheets()
+  data_dict = {}
+  for arg_name in SHEET_NAMES:
+    get_sheet_data(
+      sheets_service=service
+      , spreadsheet_id=SHEET_ID
+      , arg_name=arg_name
+      , sheet_name_dict=SHEET_NAMES[arg_name]
+      , data_dict=data_dict
+      )
+
+  pprint(data_dict)
 
 if __name__ == '__main__':
   main()

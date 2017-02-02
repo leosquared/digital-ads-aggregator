@@ -1,8 +1,6 @@
 # Credential Files saved locally
 
 .DS_STORE
-FB_CREDENTIALS.py
 __pycache__/*
-Search Reporting-534a8b279706.json
 archive/*
-
+CREDENTIALS/*

@@ -8,7 +8,7 @@ from oauth2client import file
 from oauth2client import tools
 
 ## must have CREDENTIALS.py in the same directory
-from GA_CREDENTIALS import *
+from CREDENTIALS.GA_CREDENTIALS import *
 
 ## For Script
 from pprint import pprint
