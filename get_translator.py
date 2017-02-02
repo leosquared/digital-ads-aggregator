@@ -64,22 +64,17 @@ def output_translator(json_path, data):
 
   return f'{OUTPUT_FILE_NAME} generated'
 
-def main():
+## Begin Script
+service = initialize_sheets()
+data_dict = {}
+for arg_name in SHEET_NAMES:
+  get_sheet_data(
+    sheets_service=service
+    , spreadsheet_id=SHEET_ID
+    , arg_name=arg_name
+    , sheet_name_dict=SHEET_NAMES[arg_name]
+    , data_dict=data_dict
+    )
 
-  service = initialize_sheets()
-  data_dict = {}
-  for arg_name in SHEET_NAMES:
-    get_sheet_data(
-      sheets_service=service
-      , spreadsheet_id=SHEET_ID
-      , arg_name=arg_name
-      , sheet_name_dict=SHEET_NAMES[arg_name]
-      , data_dict=data_dict
-      )
+print(output_translator(OUTPUT_FILE_NAME, data_dict))
 
-  print(output_translator(OUTPUT_FILE_NAME, data_dict))
-
-
-
-if __name__ == '__main__':
-  main()
