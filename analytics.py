@@ -136,6 +136,18 @@ def initialize_sheets():
 
   return service
 
+def delete_sheet_data(sheets_service, spreadsheet_id, sheet_name):
+  """ deletes all data from a sheet """
+
+  range_name = f'\'{sheet_name}\'!A:Z'
+  body = {
+    'ranges': [range_name]
+  }
+  response = sheets_service.spreadsheets().values().batchClear(spreadsheetId=spreadsheet_id,
+                                               body=body).execute()
+  return response
+
+
 def update_sheet(sheets_service, spreadsheet_id, sheet_name, data):
   """ take a list of values then write it to the specified sheet """
 
@@ -153,8 +165,6 @@ def update_sheet(sheets_service, spreadsheet_id, sheet_name, data):
 
 def main():
 
-  ga_views = get_views(initialize_management())
-
   analytics = initialize_analytics()
 
   ## write header row
@@ -169,22 +179,38 @@ def main():
   import get_translator
 
   ## Run report for each web property
+
+  with open(SHEET_ID_FILE, 'r') as f:
+    ga_views = json.loads(f.read())
+
   for view_id in ga_views:
-    print('Running Report for {} ...'.format(ga_views[view_id]))
+
+    ## write header row
+    file_name = f'outputs/report {ga_views[view_id]["report_name"]}.csv'
+    with open(file_name, 'w') as f:
+      writer(f).writerow(['account'] + DIMENSIONS + ['metric'] + ['metric_value'])
+
+    ## Ping API and run report
+
+    print(f'\n\nRunning Report for {ga_views[view_id]["report_name"]} ...')
     report = get_report_obj(analytics, view_id=view_id
             , metrics=METRICS, dimensions=DIMENSIONS)
-    output_report(report, OUTPUT_FILE_NAME, account_name=ga_views[view_id])
+    output_report(report, file_name, account_name=ga_views[view_id]['report_name'])
     print('Report output generated!\n')
 
   ## Update in google sheets
-  with open(OUTPUT_FILE_NAME, 'r') as f:
-    r = reader(f)
-    data = list(r)
-  for row in data:
-    row[1] = '{}/{}/{}'.format(row[1][4:6], row[1][6:], row[1][:4])
-  update_obj = update_sheet(initialize_sheets(), SHEET_ID, SHEET_NAME, data)
+    with open(file_name, 'r') as f:
+      r = reader(f)
+      data = list(r)
+    ## transform date
+    for row in data:
+      row[1] = '{}/{}/{}'.format(row[1][4:6], row[1][6:], row[1][:4])
+    ## delete data first
+    service = initialize_sheets()
+    delet_obj = delete_sheet_data(service, ga_views[view_id]['sheet_id'], SHEET_NAME)
+    update_obj = update_sheet(service, ga_views[view_id]['sheet_id'], SHEET_NAME, data)
 
-  print('{} Rows Updated in https://docs.google.com/spreadsheets/d/{}/edit'.format(update_obj.get('updatedRows'), SHEET_ID))
+    print(f'{update_obj.get("updatedRows")} Rows Updated in https://docs.google.com/spreadsheets/d/{ga_views[view_id]["sheet_id"]}/edit')
 
 
 if __name__ == '__main__':

@@ -86,12 +86,12 @@ data_dict = {}
 for arg_name in SHEET_NAMES:
   get_sheet_data(
     sheets_service=service
-    , spreadsheet_id=SHEET_ID
+    , spreadsheet_id=MASTER_SHEET_ID
     , arg_name=arg_name
     , sheet_name_dict=SHEET_NAMES[arg_name]
     , data_dict=data_dict
     )
 
 print(output_translator(TRANSLATOR_FILE, data_dict))
-print(output_report_sheets(service, SHEET_ID, REPORT_SHEET_NAME, SHEETS_FILE))
+print(output_report_sheets(service, MASTER_SHEET_ID, REPORT_SHEET_NAME, SHEETS_FILE))
 
