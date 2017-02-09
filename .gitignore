@@ -4,8 +4,8 @@
 __pycache__/*
 */__pycache__/*
 archive/*
-CREDENTIALS/*.csv
-CREDENTIALS/*.py
-CREDENTIALS/*.json
+# CREDENTIALS/*.csv
+# CREDENTIALS/*.py
+# CREDENTIALS/*.json
 outputs/*.csv
 outputs/*.json
