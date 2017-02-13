@@ -57,7 +57,6 @@ def get_report_obj(analytics_service, view_id, dimensions, metrics):
 				}
 		).execute().get('reports')[0]
 		reports.append(report)
-		print(report.get('nextPageToken'))
 
 	return reports
 
@@ -70,5 +69,5 @@ report = get_report_obj(analytics, view_id='94396389'
 						, metrics=METRICS, dimensions=DIMENSIONS)
 
 pprint(
-	len(report)
+	[x.keys() for x in report]
 )

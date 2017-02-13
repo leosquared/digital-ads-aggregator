@@ -68,22 +68,27 @@ def get_report_obj(analytics_service, view_id, dimensions, metrics):
   for m in metrics:
     metrics_input.append({'expression': f'ga:{m}'})
 
-  report = analytics_service.reports().batchGet(
-      body={
-        'reportRequests': [
-        {
-          'viewId': view_id
-          , 'dateRanges': [{'startDate': '60daysAgo'
-            , 'endDate': '1daysAgo'}]
-          , 'metrics': metrics_input
-          , 'dimensions': dimensions_input
-          , 'includeEmptyRows': False
-          , 'pageSize': 10000
-        }]
-      }
-  ).execute().get('reports')[0]
+  reports = []
+  report = {'nextPageToken': '0'}
+  while report.get('nextPageToken') is not None:
+    report = analytics_service.reports().batchGet(
+        body={
+          'reportRequests': [
+          {
+            'viewId': view_id
+            , 'dateRanges': [{'startDate': '60daysAgo'
+              , 'endDate': '1daysAgo'}]
+            , 'metrics': metrics_input
+            , 'dimensions': dimensions_input
+            , 'includeEmptyRows': False
+            , 'pageSize': 10000
+            , 'pageToken': report.get('nextPageToken')
+          }]
+        }
+    ).execute().get('reports')[0]
+    reports.append(report)
 
-  return report
+  return reports
 
 def translate_dimension(translator_json, dimension_name, dimension_value):
   """ translates a raw dimension value into human readable ones """
@@ -99,27 +104,29 @@ def translate_dimension(translator_json, dimension_name, dimension_value):
     except:
       return 'other'
 
-def output_report(report, ofile_name, account_name):
+def output_report(reports, ofile_name, account_name):
   """ takes a google analytics report object and loop through the json to get report into a spreadsheet format, reporting base file """
 
-  report_data = report.get('data').get('rows')
+  first_report = reports[0]
+  report_data = first_report.get('data').get('rows') # first report's headers
   ofile = writer(open(ofile_name, 'a'))
-  ga_metrics = [x.get('name') for x in report.get('columnHeader').get('metricHeader').get('metricHeaderEntries')]
-  ga_dimensions = report.get('columnHeader').get('dimensions')
+  ga_metrics = [x.get('name') for x in first_report.get('columnHeader').get('metricHeader').get('metricHeaderEntries')]
+  ga_dimensions = first_report.get('columnHeader').get('dimensions')
   with open(TRANSLATOR_FILE, 'r') as f:
     translator_json = json.loads(f.read())
 
   if report_data:
-    for row in report_data:
+    for report in reports:
+      for row in report_data:
 
-      translated_dimensions = []
-      for i, dim in enumerate(row.get('dimensions')):
-        translated_dimensions.append(translate_dimension(translator_json, ga_dimensions[i], dim))
+        translated_dimensions = []
+        for i, dim in enumerate(row.get('dimensions')):
+          translated_dimensions.append(translate_dimension(translator_json, ga_dimensions[i], dim))
 
-      for i, m in enumerate(ga_metrics):
-        values = row.get('metrics')[0].get('values')
-        if float(values[i])!=0:
-          ofile.writerow([account_name] + translated_dimensions + [m, values[i]])
+        for i, m in enumerate(ga_metrics):
+          values = row.get('metrics')[0].get('values')
+          if float(values[i])!=0:
+            ofile.writerow([account_name] + translated_dimensions + [m, values[i]])
 
   return None
 
