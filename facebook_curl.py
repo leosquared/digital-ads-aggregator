@@ -32,6 +32,19 @@ def get_sheet_data(sheets_service, spreadsheet_id, sheet_name):
   
   return result
 
+
+def delete_sheet_data(sheets_service, spreadsheet_id, sheet_name):
+  """ deletes all data from a specified sheet, from ranges A-Z """
+
+  range_name = f'\'{sheet_name}\'!A:Z'
+  body = {
+    'ranges': [range_name]
+  }
+  response = sheets_service.spreadsheets().values().batchClear(spreadsheetId=spreadsheet_id,
+                                               body=body).execute()
+  return response
+
+
 def get_campaign_report(campaign_id, access_token, fields, time_ranges):
 	""" obtains dict of an ad campaign with specified fields """
 	
@@ -124,6 +137,9 @@ for account_name, ad_account in ad_accounts.items():
 					, time_ranges=TIME_RANGES)
 		if r:
 			account_data.extend(transform_data(r))
+	pprint.pprint(
+		delete_sheet_data(service, ad_account['report_sheet_id'], REPORT_SHEET_NAME)
+	)
 	pprint.pprint(
 		update_sheet(service, ad_account['report_sheet_id'], REPORT_SHEET_NAME, account_data)
 	)
