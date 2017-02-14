@@ -5,7 +5,7 @@ DISCOVERY_URI_SHEETS = ('https://sheets.googleapis.com/$discovery/rest?')
 SCOPES_SHEETS = ['https://www.googleapis.com/auth/spreadsheets']
 MASTER_SHEET_ID = '1f7r_6x1XyutqZib7n-o5eQ6Iklzx-sRkkrKE1tovSfY'
 SHEET_NAMES = {
-		'utm_campaign': {'sheet_name': 'audience', 'col_num': 1, 'delim_position': 0}
+		'utm_campaign': {'sheet_name': 'audience', 'col_num': 1, 'delim_position': 2}
 		, 'utm_source': {'sheet_name': 'platform', 'col_num': 1, 'delim_position': 0}
 		, 'utm_medium': {'sheet_name': 'platform', 'col_num': 2, 'delim_position': 0}
 		, 'utm_content': {'sheet_name': 'creative', 'col_num': 3, 'delim_position': 0}

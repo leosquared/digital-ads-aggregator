@@ -61,7 +61,7 @@ def output_translator(json_path, data):
   """ output data in a json format to use in the report script """
 
   with open(json_path, 'w') as ofile:
-    ofile.write(json.dumps(data))
+    ofile.write(json.dumps(data, indent=2))
 
   return f'{json_path} generated'
 

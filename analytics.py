@@ -98,17 +98,14 @@ def translate_dimension(translator_json, dimension_name, dimension_value):
 
   if dimension_name=='ga:date':
     return datetime.strptime(dimension_value, '%Y%m%d').strftime('%m/%d/%Y')
-  elif translator_json.get(dim_name) is None:
+  try:
+    return \
+      '\'' + \
+      (translator_json[dim_name]['values'] \
+        .get(dimension_value.split('-')[translator_json[dim_name]['delim_position']]) \
+        )
+  except:
     return '\'' + dimension_value
-  else:
-    try:
-      return \
-        '\'' + \
-        (translator_json[dim_name]['values'] \
-          .get(dimension_value.split('-')[translator_json[dim_name]['delim_position']]) \
-          or dimension_value)
-    except:
-      return 'other'
 
 def output_report(reports, ofile_name, account_name):
   """ takes a google analytics report object and loop through the json to get report into a spreadsheet format, reporting base file """
@@ -179,16 +176,6 @@ def update_sheet(sheets_service, spreadsheet_id, sheet_name, data):
 def main():
 
   analytics = initialize_analytics()
-
-  # ## write header row
-  # with open(OUTPUT_FILE_NAME, 'w') as f:
-  #   right_now = datetime.now().strftime('%m-%d-%Y %I:%M%p')
-  #   writer(f).writerow([right_now] + DIMENSIONS + ['metric'] + ['metric_value'])
-
-  # ## run one off report
-  # report = get_report_obj(analytics, view_id=list(ga_views.keys())[0]
-  #         , metrics=METRICS, dimensions=DIMENSIONS)
-  # output_report(report, 'test.csv', account_name='hello')
   
   import get_translator
 
@@ -217,10 +204,6 @@ def main():
     with open(file_name, 'r') as f:
       r = reader(f)
       data = list(r)
-    ## transform date
-    # for row in data:
-    #   row[1] = '{}/{}/{}'.format(row[1][4:6], row[1][6:], row[1][:4])
-    ## delete data first
     service = initialize_sheets()
     delet_obj = delete_sheet_data(service, ga_views[view_id]['sheet_id'], SHEET_NAME)
     update_obj = update_sheet(service, ga_views[view_id]['sheet_id'], SHEET_NAME, data)

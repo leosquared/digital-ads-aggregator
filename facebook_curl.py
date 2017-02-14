@@ -61,6 +61,7 @@ def get_campaign_report(campaign_id, access_token, fields, time_ranges):
 	)
 
 	js = json.loads(f"{sr.stdout}")
+	print(js)
 
 	return js.get('data')
 
