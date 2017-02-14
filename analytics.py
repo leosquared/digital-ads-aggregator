@@ -14,6 +14,7 @@ from CREDENTIALS.GA_CREDENTIALS import *
 from pprint import pprint
 from collections import OrderedDict, Iterable
 from csv import writer, reader
+from datetime import datetime
 import re, json
 
 ## ******************** Google Analytics & Adwords Report Output ******************** ##
@@ -174,9 +175,10 @@ def main():
 
   analytics = initialize_analytics()
 
-  ## write header row
-  with open(OUTPUT_FILE_NAME, 'w') as f:
-    writer(f).writerow(['account'] + DIMENSIONS + ['metric'] + ['metric_value'])
+  # ## write header row
+  # with open(OUTPUT_FILE_NAME, 'w') as f:
+  #   right_now = datetime.now().strftime('%m-%d-%Y %I:%M%p')
+  #   writer(f).writerow([right_now] + DIMENSIONS + ['metric'] + ['metric_value'])
 
   # ## run one off report
   # report = get_report_obj(analytics, view_id=list(ga_views.keys())[0]
@@ -195,7 +197,8 @@ def main():
     ## write header row
     file_name = f'outputs/report {ga_views[view_id]["report_name"]}.csv'
     with open(file_name, 'w') as f:
-      writer(f).writerow(['account'] + DIMENSIONS + ['metric'] + ['metric_value'])
+      right_now = datetime.now().strftime('%m-%d-%Y %I:%M%p')
+      writer(f).writerow([right_now] + DIMENSIONS + ['metric'] + ['metric_value'])
 
     ## Ping API and run report
 
