@@ -77,7 +77,7 @@ def get_report_obj(analytics_service, view_id, dimensions, metrics):
           'reportRequests': [
           {
             'viewId': view_id
-            , 'dateRanges': [{'startDate': '60daysAgo'
+            , 'dateRanges': [{'startDate': '30daysAgo'
               , 'endDate': '1daysAgo'}]
             , 'metrics': metrics_input
             , 'dimensions': dimensions_input
@@ -96,12 +96,17 @@ def translate_dimension(translator_json, dimension_name, dimension_value):
 
   dim_name = dimension_name.replace('ga:', 'utm_')
 
-  if not translator_json.get(dim_name):
-    return dimension_value
+  if dimension_name=='ga:date':
+    return datetime.strptime(dimension_value, '%Y%m%d').strftime('%m/%d/%Y')
+  elif translator_json.get(dim_name) is None:
+    return '\'' + dimension_value
   else:
     try:
-      return translator_json[dim_name]['values'] \
-          .get(dimension_value.split('-')[translator_json[dim_name]['delim_position']]) or dimension_value
+      return \
+        '\'' + \
+        (translator_json[dim_name]['values'] \
+          .get(dimension_value.split('-')[translator_json[dim_name]['delim_position']]) \
+          or dimension_value)
     except:
       return 'other'
 
@@ -118,7 +123,7 @@ def output_report(reports, ofile_name, account_name):
 
   if report_data:
     for report in reports:
-      for row in report_data:
+      for row in report.get('data').get('rows'):
 
         translated_dimensions = []
         for i, dim in enumerate(row.get('dimensions')):
@@ -213,8 +218,8 @@ def main():
       r = reader(f)
       data = list(r)
     ## transform date
-    for row in data:
-      row[1] = '{}/{}/{}'.format(row[1][4:6], row[1][6:], row[1][:4])
+    # for row in data:
+    #   row[1] = '{}/{}/{}'.format(row[1][4:6], row[1][6:], row[1][:4])
     ## delete data first
     service = initialize_sheets()
     delet_obj = delete_sheet_data(service, ga_views[view_id]['sheet_id'], SHEET_NAME)
