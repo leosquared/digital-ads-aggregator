@@ -31,12 +31,22 @@ METRICS = [
 ]
 DATE_PRESET = 'last_7_days'
 # TIME_RANGE = "{'since': '2017-01-01', 'until': '2017-02-07'}"
-TIME_RANGES = [{
-	'since': (date.today()-timedelta(days=6)).strftime('%Y-%m-%d')
-	, 'until': date.today().strftime('%Y-%m-%d')
-}
-, {
-	'since': (date.today()-timedelta(days=13)).strftime('%Y-%m-%d')
-	, 'until': (date.today()-timedelta(days=7)).strftime('%Y-%m-%d')
-}]
+# TIME_RANGES = [{
+# 	'since': (date.today()-timedelta(days=6)).strftime('%Y-%m-%d')
+# 	, 'until': date.today().strftime('%Y-%m-%d')
+# }
+# , {
+# 	'since': (date.today()-timedelta(days=13)).strftime('%Y-%m-%d')
+# 	, 'until': (date.today()-timedelta(days=7)).strftime('%Y-%m-%d')
+# }]
+
+TIME_RANGES = []
+for i in range(30):
+	TIME_RANGES.insert(0, 
+		{
+		'since': (date.today()-timedelta(days=i)).strftime('%Y-%m-%d')
+		, 'until': (date.today()-timedelta(days=i)).strftime('%Y-%m-%d')	
+	})
+
+
 REPORT_SHEET_NAME = 'fb_raw'
