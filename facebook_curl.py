@@ -98,12 +98,13 @@ def transform_data(report_obj):
 				data_row.append(m)
 				data_row.append(d.get(m))
 				data.append(data_row)
-			for action in d.get('actions'):
-				data_row = []
-				data_row.extend([d.get(x) for x in DIMENSIONS])
-				data_row.append(action.get('action_type'))
-				data_row.append(action.get('value'))
-				data.append(data_row)
+			if d.get('actions'):
+				for action in d.get('actions'):
+					data_row = []
+					data_row.extend([d.get(x) for x in DIMENSIONS])
+					data_row.append(action.get('action_type'))
+					data_row.append(action.get('value'))
+					data.append(data_row)
 
 		return data
 
@@ -143,6 +144,7 @@ for account_name, ad_account in ad_accounts.items():
 	pprint.pprint(
 		update_sheet(service, ad_account['report_sheet_id'], REPORT_SHEET_NAME, account_data)
 	)
+	print(f"\n\n{account_name} is updated\n\n")
 
 
 # ## run script
