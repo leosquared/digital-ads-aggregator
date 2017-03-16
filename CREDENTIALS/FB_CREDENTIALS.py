@@ -10,6 +10,7 @@ FIELDS = [
 	'campaign_id'
 	, 'campaign_name'
 	, 'account_name'
+	# , 'adset_name'
 	, 'impressions'
 	, 'objective'
 	, 'reach'
@@ -20,6 +21,7 @@ FIELDS = [
 DIMENSIONS = [
 	'account_name'
 	, 'campaign_name'
+	# , 'adset_name'
 	, 'date_start'
 	, 'date_stop'
 	, 'objective'

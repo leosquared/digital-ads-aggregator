@@ -6,25 +6,48 @@ DISCOVERY_URI_ANALYTICS = ('https://analyticsreporting.googleapis.com/$discovery
 SERVICE_ACCOUNT_EMAIL = 'br-googleanalytics@search-reporting-144823.iam.gserviceaccount.com'
 DISCOVERY_URI_SHEETS = ('https://sheets.googleapis.com/$discovery/rest?')
 SCOPES_SHEETS = ['https://www.googleapis.com/auth/spreadsheets']
-SHEET_NAME = 'raw'
 MASTER_SHEET_ID = '1f7r_6x1XyutqZib7n-o5eQ6Iklzx-sRkkrKE1tovSfY'
-OUTPUT_FILE_NAME = 'outputs/analytics_output.csv'
 TRANSLATOR_FILE = 'outputs/translator.json'
 SHEET_ID_FILE = 'outputs/report_sheets.json'
-METRICS = [
-						'sessions'
-						, 'impressions'
-						, 'adClicks'
-						, 'adCost'
-						, 'bounces'
-						, 'goalCompletionsAll'
-						]
-DIMENSIONS = [
-							'date'
-							, 'source'
-							, 'medium'
-							, 'campaign'
-							, 'adContent'
-							, 'adGroup'
-							, 'keyword'
-							]
+
+SHEET_NAMES = {
+	1: 'ga_raw_1'
+	, 2: 'ga_raw_2'
+	, 3: 'ga_raw_3'
+}
+
+METRICS = {
+	1: [
+		'sessions'
+		, 'goalCompletionsAll'
+		, 'sessionDuration'
+		, 'pageViews'
+	]
+	, 2: [
+		'totalEvents'
+	]
+	, 3: [
+		'impressions'
+		, 'adClicks'
+		, 'adCost'
+	]
+}
+
+DIMENSIONS = {
+	1: [
+		'date'
+		, 'source'
+		, 'medium'
+		, 'campaign'
+	]
+	, 2: [
+		'date'
+		, 'eventLabel'
+		, 'campaign'
+	]
+	, 3: [
+		'date'
+		, 'adGroup'
+		, 'adContent'
+	]
+}

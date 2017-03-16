@@ -19,34 +19,6 @@ import re, json
 
 ## ******************** Google Analytics & Adwords Report Output ******************** ##
 
-def initialize_management():
-  """ get a management API object for a list of accounts, etc """
-
-  credentials = ServiceAccountCredentials.from_json_keyfile_name(JSON_FILE, scopes=SCOPES_MANAGEMENT)
-  http = credentials.authorize(httplib2.Http())
-
-  # Build the service object.
-  service = build('analytics', 'v3', http=http)
-
-  return service
-
-def get_views(management_service):
-  """ get a list of views, using the view IDs to get reports """
-
-  def clean_name(unit_name):
-    """ clean up names of web properties in google analytics that have irregular characters """
-
-    return re.sub('[^A-Za-z0-9]+', ' ', unit_name)
-  
-  ga_views = OrderedDict()
-  accounts = management_service.management().accountSummaries().list().execute().get('items')
-  for acc in accounts:
-    for wp in acc.get('webProperties'):
-      for view in wp.get('profiles'):
-        ga_views[view.get('id') ] = '{}-{}'.format(clean_name(wp.get('name')), clean_name(view.get('name')))
-
-  return ga_views
-
 def initialize_analytics():
   """ Initializes an analyticsreporting service object. """
 
@@ -77,7 +49,7 @@ def get_report_obj(analytics_service, view_id, dimensions, metrics):
           'reportRequests': [
           {
             'viewId': view_id
-            , 'dateRanges': [{'startDate': '30daysAgo'
+            , 'dateRanges': [{'startDate': '60daysAgo'
               , 'endDate': '1daysAgo'}]
             , 'metrics': metrics_input
             , 'dimensions': dimensions_input
@@ -186,29 +158,32 @@ def main():
 
   for view_id in ga_views:
 
-    ## write header row
-    file_name = f'outputs/report {ga_views[view_id]["report_name"]}.csv'
-    with open(file_name, 'w') as f:
-      right_now = datetime.now().strftime('%m-%d-%Y %I:%M%p')
-      writer(f).writerow([right_now] + DIMENSIONS + ['metric'] + ['metric_value'])
+    ## for the three raw data tabs
+    for i in range(1, 4):
 
-    ## Ping API and run report
+      ## write header row
+      file_name = f'outputs/report {ga_views[view_id]["report_name"]} {i}.csv'
+      with open(file_name, 'w') as f:
+        right_now = datetime.now().strftime('%m-%d-%Y %I:%M%p')
+        writer(f).writerow([right_now] + DIMENSIONS[i] + ['metric', 'metric_value'] )
 
-    print(f'\n\nRunning Report for {ga_views[view_id]["report_name"]} ...')
-    report = get_report_obj(analytics, view_id=view_id
-            , metrics=METRICS, dimensions=DIMENSIONS)
-    output_report(report, file_name, account_name=ga_views[view_id]['report_name'])
-    print('Report output generated!\n')
+      ## Ping API and run report
 
-  ## Update in google sheets
-    with open(file_name, 'r') as f:
-      r = reader(f)
-      data = list(r)
-    service = initialize_sheets()
-    delet_obj = delete_sheet_data(service, ga_views[view_id]['sheet_id'], SHEET_NAME)
-    update_obj = update_sheet(service, ga_views[view_id]['sheet_id'], SHEET_NAME, data)
+      print(f'\n\nRunning Report {i} for {ga_views[view_id]["report_name"]} ...')
+      report = get_report_obj(analytics, view_id=view_id
+              , metrics=METRICS[i], dimensions=DIMENSIONS[i])
+      output_report(report, file_name, account_name=ga_views[view_id]['report_name'])
+      print('Report output generated!\n')
 
-    print(f'{update_obj.get("updatedRows")} Rows Updated in https://docs.google.com/spreadsheets/d/{ga_views[view_id]["sheet_id"]}/edit')
+      ## Update in google sheets
+      with open(file_name, 'r') as f:
+        r = reader(f)
+        data = list(r)
+      service = initialize_sheets()
+      delet_obj = delete_sheet_data(service, ga_views[view_id]['sheet_id'], SHEET_NAMES[i])
+      update_obj = update_sheet(service, ga_views[view_id]['sheet_id'], SHEET_NAMES[i], data)
+
+      print(f'{update_obj.get("updatedRows")} Rows Updated in https://docs.google.com/spreadsheets/d/{ga_views[view_id]["sheet_id"]}/edit')
 
 
 if __name__ == '__main__':
